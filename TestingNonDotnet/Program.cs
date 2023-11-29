@@ -6,8 +6,15 @@ using System.Windows;
 GameLogic gameManager = new GameLogic();
 InputManager input = new InputManager();
 
+ConsoleColor[] colors = gameManager.GetConsoleColors();
+
 Task loop = new Task(gameManager.DoGameLoop);
 loop.Start();
+
+for (int i = 0; i < colors.Length; i++)
+{
+    Console.Write(colors[i]);
+}
 
 while (gameManager.running)
 {
@@ -24,11 +31,9 @@ class GameLogic
 
     public bool running = true;
     public bool inLoop = false;
-    (int, int) previousDimensions = (0, 0);
 
     void GameLoop()
     {
-        (int, int) currentDimensions = (Console.WindowWidth, Console.WindowHeight); // continue from here, put all this in functions
         //Console.WriteLine(Console.WindowWidth + ", " + Console.WindowHeight);
         /*if (currentDimensions != previousDimensions)
         {
@@ -37,8 +42,7 @@ class GameLogic
             previousDimensions = currentDimensions;
         }*/
         
-        Console.WriteLine(currentDimensions + ", " + previousDimensions);
-        previousDimensions = currentDimensions;
+        OnWindowResize();
     }
 
     public void DoGameLoop()
@@ -60,11 +64,35 @@ class GameLogic
     {
         for (int i = 0; i < Console.WindowHeight; i++)
         {
-            for (int j = 0; j < Console.WindowWidth; i++)
+            for (int j = 0; j < Console.WindowWidth; j++)
             {
                 Console.Write("#");
             }
         }
+    }
+
+
+    (int, int) currentDimensions;
+    (int, int) previousDimensions = (0,0);
+
+    void OnWindowResize()
+    {
+        
+        currentDimensions = (Console.WindowWidth, Console.WindowHeight);
+
+        if (currentDimensions != previousDimensions)
+        {
+            //FillScreen();
+            
+            Console.SetCursorPosition(0, 0);
+        }
+
+        previousDimensions = currentDimensions;
+    }
+
+    public ConsoleColor[] GetConsoleColors()
+    {
+        return (ConsoleColor[])ConsoleColor.GetValues(typeof(ConsoleColor)); // 100% stolen from docs
     }
 }
 
@@ -85,11 +113,6 @@ class InputManager
 
 static class Draw
 {
-    static void DrawScreen(List<string> screenToDraw)
-    {
-
-    }
-
     public static void ClearScreen()
     {
         Console.SetCursorPosition(0, 0);
@@ -108,3 +131,31 @@ static class FileReader
 
 }
 
+static class TileMaps
+{
+    static Dictionary<string, string> MapTiles = new Dictionary<string, string>
+    {
+        { "s", "snake" },
+        { "#", "wall" },
+        { ".", "floor" }
+    };
+
+    static Dictionary<string, ConsoleChar> AsciiTilemap = new Dictionary<string, ConsoleChar>
+    {
+        //{ "snake",  new ConsoleChar("S", )}
+    };
+}
+
+public class ConsoleChar
+{
+    string character;
+    ConsoleColor foreground;
+    ConsoleColor background;
+
+    public ConsoleChar( string _character, ConsoleColor _foregroundColor, ConsoleColor _backgroundColor )
+    {
+        this.character = _character;
+        this.foreground = _foregroundColor;
+        this.background = _backgroundColor;
+    }
+}
